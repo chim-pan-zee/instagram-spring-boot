@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.instagram_spring_boot.Mapper.PostMapper">
+
+<!-- 신규 포스트 작성 -->
+  <insert id="insertPost" parameterType="hashmap">
+  INSERT INTO POST_TABLE
+  VALUES (#{postUUID}, #{userUUID}, #{contents}, DEFAULT)
+  </insert>
+
+    <insert id="insertFiles" parameterType="hashmap">
+  INSERT INTO FILE_TABLE
+  VALUES (null, #{postUUID}, #{fileName})
+  </insert>
+
+  <select id="getPostsThumbnail" parameterType="String" resultType="hashmap">
+    select pt.post_uuid, ft.file_name, pt.created_at
+    from user_table ut
+    join post_table pt on ut.user_uuid = pt.user_uuid
+    join file_table ft on pt.post_uuid = ft.connected_uuid
+    where ut.user_id = #{userId}
+    and ft.file_idx = (
+    select min(ft2.file_idx)
+    from file_table ft2
+    where ft2.connected_uuid = pt.post_uuid
+    );
+  </select>
+
+  <select id="getPostContents" parameterType="String" resultType="hashmap">
+    select pt.post_uuid, pt.user_uuid, ut.user_id, pt.content, pt.created_at 
+    from post_table pt, user_table ut 
+    where pt.post_uuid = #{postUUID} 
+    and ut.user_uuid = pt.user_uuid
+  </select>
+
+  <select id="getPosts" resultType="hashmap">
+    SELECT pt.post_uuid, pt.user_uuid, ut.user_id, pt.content, pt.created_at
+    from post_table pt, user_table ut 
+    where ut.user_uuid = pt.user_uuid
+    ORDER BY created_at DESC
+    LIMIT 4;
+</select>
+</mapper>

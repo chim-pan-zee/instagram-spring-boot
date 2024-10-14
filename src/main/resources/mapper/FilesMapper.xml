@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.instagram_spring_boot.Mapper.FilesMapper">
+
+<!-- 신규 포스트 작성 -->
+  <select id="getFiles" parameterType="String" resultType="hashmap">
+    select * from file_table 
+    where connected_uuid = #{connectedUUID};
+  </select>
+
+
+</mapper>

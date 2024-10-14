@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.instagram_spring_boot.Mapper.UserMapper">
+<!-- 중복체크 -->
+  <select id="getCount" parameterType="String" resultType="int">
+        SELECT COUNT(*)
+        FROM USER_TABLE
+        WHERE ${type} = #{val}
+  </select>
+<!-- 회원가입 -->
+  <insert id="insertUser" parameterType="hashmap">
+  INSERT INTO USER_TABLE
+  VALUES (#{userUUID}, #{userPhone}, #{userEmail}, #{userId}, #{userName}, #{userPassword}, null, null, null, DEFAULT)
+  </insert>
+<!-- 로그인 -->
+  <select id="getUser" parameterType="hashmap" resultType="hashmap" >
+  SELECT * FROM USER_TABLE WHERE ${type} = #{val}
+  </select>
+<!-- 조회 -->
+  <select id="getUserInfo" parameterType="String" resultType="hashmap" >
+  SELECT USER_UUID, USER_ID, USER_NAME FROM USER_TABLE WHERE USER_ID = #{userId}
+  </select>
+</mapper>

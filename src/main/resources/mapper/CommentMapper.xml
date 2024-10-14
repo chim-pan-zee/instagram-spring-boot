@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.instagram_spring_boot.Mapper.CommentMapper">
+
+<!-- 신규 포스트 작성 -->
+  <insert id="insertComment" parameterType="hashmap">
+  INSERT INTO COMMENT_TABLE
+  VALUES (null, #{postId}, #{userUUID}, #{contents}, DEFAULT)
+  </insert>
+  <select id="getComments" parameterType="String" resultType="hashmap">
+  select ut.user_id, ct.contents, ct.created_at
+  from comment_table ct, user_table ut
+  where ut.user_uuid = ct.user_uuid and
+  post_uuid = #{postId}
+  order by comment_idx asc;
+  </select>
+</mapper>

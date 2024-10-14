@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTO Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.instagram_spring_boot.Mapper.LikeMapper">
+
+  <insert id="insertLike" parameterType="hashmap">
+    INSERT INTO like_table (post_uuid, user_uuid)
+    VALUES (#{postId}, #{userUUID})
+  </insert>
+
+  <select id="getLikeTotal" parameterType="String" resultType="int">
+    SELECT count(lt.user_uuid) AS total
+    FROM like_table lt
+    WHERE lt.post_uuid = #{postId}
+  </select>
+  
+ <select id="getLikeCheck" parameterType="String" resultType="int">
+    SELECT COUNT(*)
+    FROM LIKE_TABLE
+    WHERE user_uuid = #{userUUID}
+    AND post_uuid = #{postId}
+  </select>
+
+  <delete id="deleteLike" parameterType="String">
+    DELETE FROM like_table WHERE post_uuid= #{postId} AND user_uuid = #{userUUID};
+  </delete>
+</mapper>
