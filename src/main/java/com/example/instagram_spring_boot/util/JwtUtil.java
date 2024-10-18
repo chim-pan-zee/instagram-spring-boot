@@ -48,7 +48,6 @@ public class JwtUtil {
 
     public DecodedJWT decodeToken(String token) {
         try {
-            System.out.println("시크릿: " + secret);  // secret값 확인
             Algorithm algorithm = Algorithm.HMAC256(secret);
             JWTVerifier verifier = JWT.require(algorithm)
                     .withIssuer("vue-board")

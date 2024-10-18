@@ -3,7 +3,6 @@
 
 <mapper namespace="com.example.instagram_spring_boot.Mapper.CommentMapper">
 
-<!-- 신규 포스트 작성 -->
   <insert id="insertComment" parameterType="hashmap">
   INSERT INTO COMMENT_TABLE
   VALUES (null, #{postId}, #{userUUID}, #{contents}, DEFAULT)
@@ -14,5 +13,11 @@
   where ut.user_uuid = ct.user_uuid and
   post_uuid = #{postId}
   order by comment_idx asc;
+  </select>
+
+  <select id="getCount" parameterType="String" resultType="int">
+  select count(*) as total
+  from comment_table
+  where post_uuid = #{postId}
   </select>
 </mapper>

@@ -13,4 +13,6 @@ public interface CommentMapper {
 
     //댓글 조회
     List<HashMap> getComments(String postUUID);
+
+    int getCount(String postId);
 }

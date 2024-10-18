@@ -71,9 +71,7 @@ public class LikesController {
     @GetMapping("/likes/{postId}")
     public int getLikeCount(@PathVariable String postId) {
         try {
-            System.out.println("좋아요 프로토콜입니다." + postId);
             int result = likeMapper.getLikeTotal(postId);
-            System.out.println("갯수는++ " + result);
             return result;
 
         } catch (Exception e) {
@@ -82,16 +80,43 @@ public class LikesController {
 
     }
 
-    @DeleteMapping("/likes")
-    public boolean deleteLike(String postId, String userUUID) {
+    @PostMapping("/likes/check")
+    public boolean getLikeCheck(@RequestBody HashMap<String, String> newLike) {
         try {
-            likeMapper.deleteLike(postId, userUUID);
-            return true;
+            String token = newLike.get("authorToken");
+            String postId = newLike.get("postId");
+            if (token != null) {
+
+                DecodedJWT decodedJWT = jwtUtil.decodeToken(token);
+                if (decodedJWT != null) {
+                    String userUUID = decodedJWT.getClaim("userUUID").asString();
+                    int likeCheck = likeMapper.getLikeCheck(postId, userUUID);
+                    if (likeCheck == 0) {
+                        return false;
+                    } else {
+                        return true;
+                    }
+                }
+            }
+            return false;
         } catch (Exception e) {
-            System.out.println("좋아요 제거 중 에러 발생");
-            e.printStackTrace();
             return false;
         }
     }
 
+    @DeleteMapping("/likes")
+
+    public boolean deleteLike(String postId, String userUUID) {
+        {
+            try {
+                likeMapper.deleteLike(postId, userUUID);
+                return true;
+            } catch (Exception e) {
+                System.out.println("좋아요 제거 중 에러 발생");
+                e.printStackTrace();
+                return false;
+            }
+        }
+
+    }
 }

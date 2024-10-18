@@ -7,9 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.example.instagram_spring_boot.Mapper.FilesMapper;
 import com.example.instagram_spring_boot.util.JwtUtil;
 
@@ -83,4 +86,25 @@ public class FilesController {
             return null;
         }
     }
+
+    //프로필 이미지 수정
+    @PatchMapping("/{id}")
+    public boolean updateProfileImg(@RequestBody HashMap<String, String> profile) {
+        try {
+            String token = profile.get("authorToken");
+            if (token != null) {
+
+                DecodedJWT decodedJWT = jwtUtil.decodeToken(token);
+                if (decodedJWT != null) {
+                    String userUUID = decodedJWT.getClaim("userUUID").asString();
+                    String fileName = profile.get("fileName");
+                }
+            }
+            return false;
+        } catch (Exception e) {
+            // TODO: handle exception
+            return false;
+        }
+    }
+
 }

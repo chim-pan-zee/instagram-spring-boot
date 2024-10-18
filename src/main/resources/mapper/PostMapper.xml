@@ -3,7 +3,6 @@
 
 <mapper namespace="com.example.instagram_spring_boot.Mapper.PostMapper">
 
-<!-- 신규 포스트 작성 -->
   <insert id="insertPost" parameterType="hashmap">
   INSERT INTO POST_TABLE
   VALUES (#{postUUID}, #{userUUID}, #{contents}, DEFAULT)
@@ -34,11 +33,25 @@
     and ut.user_uuid = pt.user_uuid
   </select>
 
-  <select id="getPosts" resultType="hashmap">
-    SELECT pt.post_uuid, pt.user_uuid, ut.user_id, pt.content, pt.created_at
-    from post_table pt, user_table ut 
-    where ut.user_uuid = pt.user_uuid
-    ORDER BY created_at DESC
-    LIMIT 4;
+  <select id="getPosts" resultType="hashmap" parameterType="int">
+  SELECT pt.post_uuid, pt.user_uuid, ut.user_id, pt.content, pt.created_at
+  FROM post_table pt
+  JOIN user_table ut ON ut.user_uuid = pt.user_uuid
+  ORDER BY pt.created_at DESC
+  LIMIT 4 OFFSET #{offset};
 </select>
+
+  <delete id="deletePost" parameterType="String">
+    DELETE FROM post_table WHERE post_uuid = #{postId};
+DELETE FROM like_table WHERE post_uuid = #{postId};
+DELETE FROM file_table WHERE connected_uuid = #{postId};
+DELETE FROM comment_table WHERE post_uuid = #{postId};
+  </delete>
+
+
+  <!-- updatePost --> 
+
+  <update id="updatePost" parameterType="String">
+  update post_table set content = #{contents} where post_uuid = #{postUUID} and user_uuid = #{userUUID}
+  </update>
 </mapper>

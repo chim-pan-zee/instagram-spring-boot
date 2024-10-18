@@ -11,4 +11,6 @@ public interface FilesMapper {
     //게시물 파일 조회
     List<HashMap> getFiles(String connectedUUID);
 
+    void deleteFiles(String postId);
+
 }

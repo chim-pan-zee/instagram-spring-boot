@@ -23,6 +23,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import com.auth0.jwt.interfaces.DecodedJWT;
+
 @CrossOrigin(origins = "http://localhost:8081")
 @RestController
 public class UserController {
@@ -252,6 +254,31 @@ public class UserController {
         }
     }
 
-    
+    @GetMapping("/{userId}/{userToken}")
+    public boolean getUserUUIDCheck(@PathVariable String userId, @PathVariable String userToken) {
+        try {
+            if (userToken != null) {
+
+                DecodedJWT decodedJWT = jwtUtil.decodeToken(userToken);
+                if (decodedJWT != null) {
+                    String userUUID = decodedJWT.getClaim("userUUID").asString();
+                    int rs = userMapper.getUserCheck(userId, userUUID);
+                    if (rs > 0) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        } catch (Exception e) {
+            System.out.println("에러 발생했습니다.");
+            e.printStackTrace();
+            return false;
+        }
+    }
 
 }

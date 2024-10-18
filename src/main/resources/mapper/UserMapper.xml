@@ -11,7 +11,7 @@
 <!-- 회원가입 -->
   <insert id="insertUser" parameterType="hashmap">
   INSERT INTO USER_TABLE
-  VALUES (#{userUUID}, #{userPhone}, #{userEmail}, #{userId}, #{userName}, #{userPassword}, null, null, null, DEFAULT)
+  VALUES (#{userUUID}, #{userPhone}, #{userEmail}, #{userId}, #{userName}, #{userPassword}, null, null, null, DEFAULT, DEFAULT)
   </insert>
 <!-- 로그인 -->
   <select id="getUser" parameterType="hashmap" resultType="hashmap" >
@@ -19,6 +19,12 @@
   </select>
 <!-- 조회 -->
   <select id="getUserInfo" parameterType="String" resultType="hashmap" >
-  SELECT USER_UUID, USER_ID, USER_NAME FROM USER_TABLE WHERE USER_ID = #{userId}
+  SELECT ut.USER_UUID, ut.USER_ID, ut.USER_NAME,count(pt.user_uuid)as total  
+  FROM USER_TABLE ut, post_table pt 
+  WHERE ut.USER_ID = #{userId} and ut.user_uuid = pt.user_uuid
+  </select>
+
+  <select id="getUserCheck" parameterType="String" resultType="int">
+  select count(*) as total from user_table where user_id = #{userId} and user_uuid = #{userUUID}
   </select>
 </mapper>

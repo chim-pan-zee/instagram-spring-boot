@@ -19,8 +19,11 @@ public interface PostMapper {
     HashMap getPostContents(String postUUID);
 
     //게시물 조회
-    List<HashMap> getPosts();
+    List<HashMap> getPosts(int offset);
 
-    
+    void deletePost(String postId);
+
+    //게시물 업데이트
+    void updatePost(String contents, String postUUID, String userUUID);
 
 }

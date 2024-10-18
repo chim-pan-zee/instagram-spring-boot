@@ -22,6 +22,6 @@
   </select>
 
   <delete id="deleteLike" parameterType="String">
-    DELETE FROM like_table WHERE post_uuid= #{postId} AND user_uuid = #{userUUID};
+    DELETE FROM like_table WHERE post_uuid= #{postId} AND user_uuid = #{userUUID}
   </delete>
 </mapper>

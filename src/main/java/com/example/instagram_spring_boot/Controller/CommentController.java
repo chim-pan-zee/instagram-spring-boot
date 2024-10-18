@@ -76,4 +76,17 @@ public class CommentController {
         }
     }
 
+    @GetMapping("/comment/{postId}")
+    public int getCommentCount(@PathVariable String postId) {
+        try {
+            int count = commentMapper.getCount(postId);
+            return count;
+
+        } catch (Exception e) {
+            System.out.println("에러 발생.");
+            return 0;
+
+        }
+    }
+
 }
