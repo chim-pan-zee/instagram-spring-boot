@@ -5,26 +5,26 @@
 <!-- 중복체크 -->
   <select id="getCount" parameterType="String" resultType="int">
         SELECT COUNT(*)
-        FROM USER_TABLE
+        FROM person
         WHERE ${type} = #{val}
   </select>
 <!-- 회원가입 -->
   <insert id="insertUser" parameterType="hashmap">
-  INSERT INTO USER_TABLE
-  VALUES (#{userUUID}, #{userPhone}, #{userEmail}, #{userId}, #{userName}, #{userPassword}, null, null, null, DEFAULT, DEFAULT)
+  INSERT INTO person
+  VALUES (null, #{userEmail}, #{userPhone}, #{userId}, #{userName}, #{userPassword}, null, null, DEFAULT, DEFAULT)
   </insert>
 <!-- 로그인 -->
   <select id="getUser" parameterType="hashmap" resultType="hashmap" >
-  SELECT * FROM USER_TABLE WHERE ${type} = #{val}
+  SELECT * FROM person WHERE ${type} = #{val}
   </select>
 <!-- 조회 -->
   <select id="getUserInfo" parameterType="String" resultType="hashmap" >
-  SELECT ut.USER_UUID, ut.USER_ID, ut.USER_NAME,count(pt.user_uuid)as total  
-  FROM USER_TABLE ut, post_table pt 
-  WHERE ut.USER_ID = #{userId} and ut.user_uuid = pt.user_uuid
+  SELECT ut.user_idx, ut.username, ut.name,count(pt.user_idx)as total  
+  FROM person ut, post pt 
+  WHERE ut.username = #{username} and ut.user_idx = pt.user_idx
   </select>
 
   <select id="getUserCheck" parameterType="String" resultType="int">
-  select count(*) as total from user_table where user_id = #{userId} and user_uuid = #{userUUID}
+  select count(*) as total from person where username = #{userId}
   </select>
 </mapper>

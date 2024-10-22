@@ -57,10 +57,16 @@ public class PostController {
 
             DecodedJWT decodedJWT = jwtUtil.decodeToken(token);
             if (decodedJWT != null) {
-                String userUUID = decodedJWT.getClaim("userUUID").asString();
-                UUID postUUID = UUID.randomUUID();
-                String strPostUUID = postUUID.toString();
-                System.out.println("추출된 유저 UUID: " + userUUID);
+                String username = decodedJWT.getClaim("username").asString();
+                String postUUID = UUID.randomUUID().toString();
+                System.out.println("추출된 유저 UUID: " + username);
+
+                HashMap<String, String> newPost = new HashMap<>();
+                newPost.put("postUUID", postUUID);
+                newPost.put("username", username);
+                newPost.put("contents", contents);
+                System.out.println("반복!반복!반복작업!");
+                postMapper.insertPost(newPost);
 
                 for (MultipartFile file : files) {
                     String originalFilename = file.getOriginalFilename();
@@ -73,17 +79,10 @@ public class PostController {
                     System.out.println("파일이 저장된 경로: " + savePath.toString());
 
                     HashMap<String, String> postFiles = new HashMap<>();
-                    postFiles.put("postUUID", strPostUUID);
+                    postFiles.put("postUUID", postUUID);
                     postFiles.put("fileName", saveFilename);
                     postMapper.insertFiles(postFiles);
                 }
-
-                HashMap<String, String> newPost = new HashMap<>();
-                newPost.put("postUUID", strPostUUID);
-                newPost.put("userUUID", userUUID);
-                newPost.put("contents", contents);
-                System.out.println("반복!반복!반복작업!");
-                postMapper.insertPost(newPost);
 
             } else {
                 System.out.println("이 토큰은 거짓말을 하는 토큰이군");
@@ -104,14 +103,14 @@ public class PostController {
     @PostMapping("/{id}")
     public List<HashMap> getPostInfo(@RequestPart(value = "key", required = false) Map<String, String> key) {
         try {
-            String userId = key.get("userId");
+            String username = key.get("username");
             String token = key.get("userToken");
-            System.out.println("토큰은:" + token);
+            // System.out.println("토큰은:" + token);
             DecodedJWT decodedJWT = jwtUtil.decodeToken(token);
 
             if (decodedJWT != null) {
                 String userUUID = decodedJWT.getClaim("userUUID").asString();
-                List<HashMap> thumbnails = postMapper.getPostsThumbnail(userId);
+                List<HashMap> thumbnails = postMapper.getPostsThumbnail(username);
 
                 List<HashMap> imagesWithPath = new ArrayList<>();
                 for (HashMap thumbnail : thumbnails) {

@@ -1,16 +1,22 @@
 package com.example.instagram_spring_boot.Controller;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.example.instagram_spring_boot.Mapper.FilesMapper;
@@ -88,22 +94,49 @@ public class FilesController {
     }
 
     //프로필 이미지 수정
-    @PatchMapping("/{id}")
-    public boolean updateProfileImg(@RequestBody HashMap<String, String> profile) {
+    @PutMapping("/{id}")
+    private void editUser(
+            @RequestPart(value = "key", required = false) Map<String, String> key,
+            @RequestPart(value = "files") List<MultipartFile> files
+    ) {
         try {
-            String token = profile.get("authorToken");
-            if (token != null) {
+            System.out.println("키값: " + key);
 
-                DecodedJWT decodedJWT = jwtUtil.decodeToken(token);
-                if (decodedJWT != null) {
-                    String userUUID = decodedJWT.getClaim("userUUID").asString();
-                    String fileName = profile.get("fileName");
+            String token = key.get("authorToken");
+
+            DecodedJWT decodedJWT = jwtUtil.decodeToken(token);
+            if (decodedJWT != null) {
+                String username = decodedJWT.getClaim("username").asString();
+                String userDesc = key.get("userDesc");
+                String userGender = key.get("userGender");
+
+                HashMap<String, String> setProfile = new HashMap<>();
+                setProfile.put("username", username);
+                setProfile.put("userDesc", userDesc);
+                setProfile.put("userGender", userGender);
+                System.out.println("반복!반복!반복작업!");
+
+                for (MultipartFile file : files) {
+                    String originalFilename = file.getOriginalFilename();
+                    UUID fileUUID = UUID.randomUUID();
+                    String saveFilename = fileUUID.toString() + "_" + originalFilename;
+
+                    Path savePath = Paths.get(uploadFolder, saveFilename);
+                    Files.write(savePath, file.getBytes());
+
+                    System.out.println("파일이 저장된 경로: " + savePath.toString());
+
+                    HashMap<String, String> postFiles = new HashMap<>();
+                    postFiles.put("username", username);
+                    postFiles.put("fileName", saveFilename);
                 }
+
+            } else {
+                System.out.println("이 토큰은 거짓말을 하는 토큰이군");
             }
-            return false;
         } catch (Exception e) {
-            // TODO: handle exception
-            return false;
+            System.out.println("에러 발생했습니다.");
+            e.printStackTrace();
         }
     }
 

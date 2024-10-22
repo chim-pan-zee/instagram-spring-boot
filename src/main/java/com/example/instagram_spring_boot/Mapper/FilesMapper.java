@@ -13,4 +13,9 @@ public interface FilesMapper {
 
     void deleteFiles(String postId);
 
+    //사용자 프로필 업데이트
+    void updateUser(HashMap<String, String> setProfile);
+
+    void updateUserFile(HashMap<String, String> setFile);
+
 }

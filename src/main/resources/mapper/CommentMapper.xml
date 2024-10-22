@@ -4,20 +4,20 @@
 <mapper namespace="com.example.instagram_spring_boot.Mapper.CommentMapper">
 
   <insert id="insertComment" parameterType="hashmap">
-  INSERT INTO COMMENT_TABLE
+  INSERT INTO comment
   VALUES (null, #{postId}, #{userUUID}, #{contents}, DEFAULT)
   </insert>
   <select id="getComments" parameterType="String" resultType="hashmap">
-  select ut.user_id, ct.contents, ct.created_at
-  from comment_table ct, user_table ut
-  where ut.user_uuid = ct.user_uuid and
+  select ut.username, ct.content, ct.created_at
+  from comment ct, person ut
+  where ut.user_idx = ct.user_idx and
   post_uuid = #{postId}
   order by comment_idx asc;
   </select>
 
   <select id="getCount" parameterType="String" resultType="int">
   select count(*) as total
-  from comment_table
+  from comment
   where post_uuid = #{postId}
   </select>
 </mapper>

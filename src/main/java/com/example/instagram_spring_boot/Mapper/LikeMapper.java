@@ -7,7 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 @Mapper
 public interface LikeMapper {
 
-    //좋아요 조회
+    //z 조회
     int getLikeTotal(String postId);
 
     int getLikeCheck(String postId, String userUUID);

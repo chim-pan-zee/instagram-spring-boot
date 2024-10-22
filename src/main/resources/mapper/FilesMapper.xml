@@ -4,11 +4,15 @@
 <mapper namespace="com.example.instagram_spring_boot.Mapper.FilesMapper">
 
   <select id="getFiles" parameterType="String" resultType="hashmap">
-    select file_name from file_table 
-    where connected_uuid = #{connectedUUID}
+    select file_name from post_file 
+    where post_uuid = #{connectedUUID}
   </select>
 
   <delete id="deleteFiles" parameterType="String">
-    delete from file_table where connected_uuid = #{postId}
+    delete from post_file where post_uuid = #{postId}
   </delete>
+
+  <update >
+  
+  </update>
 </mapper>

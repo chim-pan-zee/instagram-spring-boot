@@ -3,55 +3,61 @@
 
 <mapper namespace="com.example.instagram_spring_boot.Mapper.PostMapper">
 
-  <insert id="insertPost" parameterType="hashmap">
-  INSERT INTO POST_TABLE
-  VALUES (#{postUUID}, #{userUUID}, #{contents}, DEFAULT)
-  </insert>
+ <insert id="insertPost" parameterType="hashmap">
+  INSERT INTO post
+  VALUES (
+    #{postUUID}, 
+    (SELECT user_idx FROM person WHERE username = #{username}), 
+    #{contents}, 
+    DEFAULT
+  )
+</insert>
+
 
     <insert id="insertFiles" parameterType="hashmap">
-  INSERT INTO FILE_TABLE
-  VALUES (null, #{postUUID}, #{fileName})
+  INSERT INTO post_file
+  VALUES (#{postUUID}, null, #{fileName},null, null )
   </insert>
 
   <select id="getPostsThumbnail" parameterType="String" resultType="hashmap">
     select pt.post_uuid, ft.file_name, pt.created_at
-    from user_table ut
-    join post_table pt on ut.user_uuid = pt.user_uuid
-    join file_table ft on pt.post_uuid = ft.connected_uuid
-    where ut.user_id = #{userId}
+    from person ut
+    join post pt on ut.user_idx = pt.user_idx
+    join post_file ft on pt.post_uuid = ft.post_uuid
+    where ut.username = #{userId}
     and ft.file_idx = (
     select min(ft2.file_idx)
-    from file_table ft2
-    where ft2.connected_uuid = pt.post_uuid
+    from post_file ft2
+    where ft2.post_uuid = pt.post_uuid
     );
   </select>
 
   <select id="getPostContents" parameterType="String" resultType="hashmap">
-    select pt.post_uuid, pt.user_uuid, ut.user_id, pt.content, pt.created_at 
-    from post_table pt, user_table ut 
+    select pt.post_uuid, pt.user_idx, ut.username, pt.content, pt.created_at 
+    from post pt, person ut 
     where pt.post_uuid = #{postUUID} 
-    and ut.user_uuid = pt.user_uuid
+    and ut.user_idx = pt.user_idx
   </select>
 
   <select id="getPosts" resultType="hashmap" parameterType="int">
-  SELECT pt.post_uuid, pt.user_uuid, ut.user_id, pt.content, pt.created_at
-  FROM post_table pt
-  JOIN user_table ut ON ut.user_uuid = pt.user_uuid
+  SELECT pt.post_uuid, pt.user_idx, ut.username, pt.content, pt.created_at
+  FROM post pt
+  JOIN person ut ON ut.user_idx = pt.user_idx
   ORDER BY pt.created_at DESC
   LIMIT 4 OFFSET #{offset};
 </select>
 
   <delete id="deletePost" parameterType="String">
-    DELETE FROM post_table WHERE post_uuid = #{postId};
-DELETE FROM like_table WHERE post_uuid = #{postId};
-DELETE FROM file_table WHERE connected_uuid = #{postId};
-DELETE FROM comment_table WHERE post_uuid = #{postId};
+    DELETE FROM post WHERE post_uuid = #{postId};
+DELETE FROM post_like WHERE post_uuid = #{postId};
+DELETE FROM post_file WHERE post_uuid = #{postId};
+DELETE FROM comment WHERE post_uuid = #{postId};
   </delete>
 
 
   <!-- updatePost --> 
 
   <update id="updatePost" parameterType="String">
-  update post_table set content = #{contents} where post_uuid = #{postUUID} and user_uuid = #{userUUID}
+  update post set content = #{contents} where post_uuid = #{postUUID} and user_idx = #{userUUID}
   </update>
 </mapper>

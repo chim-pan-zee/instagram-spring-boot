@@ -15,7 +15,7 @@ public interface UserMapper {
     //로그인
     HashMap getUser(HashMap<String, String> map);
 
-    HashMap getUserInfo(String userId);
+    HashMap getUserInfo(String username);
 
     //유저 체크
     int getUserCheck(String userId, String userUUID);

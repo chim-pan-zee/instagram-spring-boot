@@ -30,7 +30,7 @@ public class JwtUtil {
         secret = secretValue;
     }
 
-    public String createToken(String userUUID, String userId) {
+    public String createToken(String username) {
         Algorithm algorithm = Algorithm.HMAC256(secret);
 
         Calendar date = Calendar.getInstance();
@@ -39,8 +39,7 @@ public class JwtUtil {
 
         return JWT.create()
                 .withIssuer("vue-board")
-                .withClaim("userUUID", userUUID)
-                .withClaim("userId", userId)
+                .withClaim("username", username)
                 .withIssuedAt(date.getTime())
                 // .withExpiresAt(afterAdding30Mins)
                 .sign(algorithm);

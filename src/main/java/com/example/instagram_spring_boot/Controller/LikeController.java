@@ -3,6 +3,7 @@ package com.example.instagram_spring_boot.Controller;
 import java.util.HashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,22 +13,31 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.example.instagram_spring_boot.Mapper.CommentMapper;
 import com.example.instagram_spring_boot.Mapper.LikeMapper;
 import com.example.instagram_spring_boot.util.JwtUtil;
 
 @CrossOrigin(origins = "http://localhost:8081")
 @RestController
-public class LikesController {
+public class LikeController {
 
-    @Autowired
-    private CommentMapper commentMapper;
-
+    // @Autowired
+    // private CommentMapper commentMapper;
     @Autowired
     private LikeMapper likeMapper;
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private RedisTemplate<String, Byte> redisLike;
+
+    public void saveData(String key, Byte data) {
+        redisLike.opsForValue().set(key, data);
+    }
+
+    public Byte getData(String key) {
+        return redisLike.opsForValue().get(key);
+    }
 
     @PostMapping("/likes")
     public int increaseLike(@RequestBody HashMap<String, String> newLike) {
@@ -46,9 +56,14 @@ public class LikesController {
                     int likeCheck = likeMapper.getLikeCheck(postId, userUUID);
 
                     if (likeCheck > 0) {
-                        deleteLike(postId, userUUID);
+                        deleteLike("post-like-" + postId, userUUID);
                         return 2;
                     } else {
+
+                        //redis
+                        Byte likeVal = 1;
+                        saveData(postId, likeVal);
+
                         HashMap<String, String> result = new HashMap<>();
                         result.put("postId", postId);
                         result.put("userUUID", userUUID);

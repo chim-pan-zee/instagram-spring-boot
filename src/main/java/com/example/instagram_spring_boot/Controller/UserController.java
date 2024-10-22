@@ -41,19 +41,19 @@ public class UserController {
 
     public static boolean isValidText(String text, String type) {
         switch (type) {
-            case "user_email":
+            case "email":
                 type = EMAIL_REGEX;
                 break;
-            case "user_phone":
+            case "phone":
                 type = PHONE_REGEX;
                 break;
-            case "user_id":
+            case "username":
                 type = ID_REGEX;
                 break;
-            case "user_name":
+            case "name":
                 type = NAME_REGEX;
                 break;
-            case "user_password":
+            case "password":
                 type = PASSWORD_REGEX;
                 break;
             default:
@@ -80,7 +80,7 @@ public class UserController {
     @GetMapping("/check/{inputType}/{inputVal}")
     public Boolean dupeCheck(@PathVariable String inputType, @PathVariable String inputVal) {
         try {
-            if (inputType.equals("user_email") || inputType.equals("user_phone") || inputType.equals("user_id")) {
+            if (inputType.equals("email") || inputType.equals("phone") || inputType.equals("username")) {
                 System.out.println(inputType);
                 System.out.println(inputVal);
 
@@ -105,11 +105,11 @@ public class UserController {
         }
     }
 
-    @GetMapping("/{userId}")
+    @GetMapping("/{username}")
 
-    public HashMap getInfo(@PathVariable String userId) {
+    public HashMap getInfo(@PathVariable String username) {
         try {
-            HashMap resultInfo = userMapper.getUserInfo(userId);
+            HashMap resultInfo = userMapper.getUserInfo(username);
 
             return resultInfo;
         } catch (Exception e) {
@@ -126,7 +126,6 @@ public class UserController {
             boolean isNotDupe = false;
             String userAddress = newUser.get("userAddress");
             String userId = newUser.get("userId");
-            UUID userUUID = UUID.randomUUID();
             String userName = newUser.get("userName");
             String userPassword = newUser.get("userPassword");
             HashMap<String, String> inputMap = new HashMap<String, String>();
@@ -134,7 +133,7 @@ public class UserController {
             System.out.println("검증 시작" + newUser);
             if (isValidText(userAddress, "user_email") == true) {
                 System.out.println("이메일 검증 시작");
-                inputMap.put("type", "user_email");
+                inputMap.put("type", "email");
                 inputMap.put("val", userAddress);
                 count = userMapper.getCount(inputMap);
 
@@ -142,8 +141,8 @@ public class UserController {
                 newUser.put("userPhone", "noPhone");
                 System.out.println("이메일 검증");
 
-            } else if (isValidText(userAddress, "user_phone") == true) {
-                inputMap.put("type", "user_phone");
+            } else if (isValidText(userAddress, "phone") == true) {
+                inputMap.put("type", "phone");
                 inputMap.put("val", userAddress);
                 count = userMapper.getCount(inputMap);
 
@@ -159,8 +158,8 @@ public class UserController {
             } else {
                 System.out.println("중복아님");
 
-                if ((isValidText(userId, "user_id") == true)) {
-                    inputMap.put("type", "user_id");
+                if ((isValidText(userId, "username") == true)) {
+                    inputMap.put("type", "username");
                     inputMap.put("val", userAddress);
                     count = userMapper.getCount(inputMap);
 
@@ -172,10 +171,9 @@ public class UserController {
                     } else {
                         System.out.println("id검증완료");
 
-                        if (isValidText(userName, "user_name") == true && isValidText(userPassword, "user_password") == true) {
+                        if (isValidText(userName, "name") == true && isValidText(userPassword, "password") == true) {
                             String hashPassword = shaUtil.sha256Encode(userPassword);
                             newUser.put("userPassword", hashPassword);
-                            newUser.put("userUUID", userUUID.toString());
                             System.out.println("비번검증완료" + newUser);
 
                             userMapper.insertUser(newUser);
@@ -222,20 +220,16 @@ public class UserController {
                     String hashPassword = shaUtil.sha256Encode(userPassword);
                     System.out.println("암호화");
 
-                    if (hashPassword.equals(user.get("user_password"))) {
-                        System.out.println("실행이쿠죠");
-                        String userUUID = (String) user.get("user_uuid");
-                        System.out.println("실행이쿠죠");
-
-                        String userId = (String) user.get("user_id");
+                    if (hashPassword.equals(user.get("password"))) {
+                        String username = (String) user.get("username");
                         System.out.println("실행이쿠죠");
 
-                        String token = jwtUtil.createToken(userUUID, userId);
+                        String token = jwtUtil.createToken(username);
                         System.out.println(token);
                         response.setHeader("Authorization", token);
 
                         HashMap<String, Object> result = new HashMap<>();
-                        result.put("user_id", userId);
+                        result.put("username", username);
                         result.put("user_token", token);
                         System.out.println("현재토큰: " + token);
                         return ResponseEntity.ok(result);
