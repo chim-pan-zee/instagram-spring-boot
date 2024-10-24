@@ -5,7 +5,7 @@
 
   <insert id="insertComment" parameterType="hashmap">
   INSERT INTO comment
-  VALUES (null, #{postId}, #{userIdx}, #{contents}, DEFAULT)
+  VALUES (null, #{userIdx}, #{postId}, #{contents}, DEFAULT, null, null, null)
   </insert>
   <select id="getComments" parameterType="String" resultType="hashmap">
   select ut.username, ct.content, ct.created_at

@@ -57,6 +57,8 @@ public class CommentController {
                 result.put("userIdx", getStringDataByRedis("user-idx-" + username));
                 result.put("contents", contents);
 
+                System.out.println(result);
+
                 commentMapper.insertComment(result);
                 return true;
             } else {

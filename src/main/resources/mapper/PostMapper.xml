@@ -49,9 +49,6 @@
 
   <delete id="deletePost" parameterType="String">
     DELETE FROM post WHERE post_uuid = #{postId};
-DELETE FROM post_like WHERE post_uuid = #{postId};
-DELETE FROM post_file WHERE post_uuid = #{postId};
-DELETE FROM comment WHERE post_uuid = #{postId};
   </delete>
 
 
