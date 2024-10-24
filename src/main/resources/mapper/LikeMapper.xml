@@ -5,7 +5,7 @@
 
   <insert id="insertLike" parameterType="hashmap">
     INSERT INTO post_like
-    VALUES (#{postId}, #{userUUID});
+    VALUES (#{postId}, #{userIdx});
 
     update post set post_like_count = post.post_like_count + 1 where post_uuid = #{postId};
   </insert>
@@ -21,14 +21,14 @@
  <select id="getLikeCheck" parameterType="String" resultType="int">
     SELECT COUNT(*)
     FROM post_like
-    WHERE user_idx = #{userUUID}
+    WHERE user_idx = #{userIdx}
     AND post_uuid = #{postId}
   </select>
 
   <delete id="deleteLike" parameterType="String">
     update post set post_like_count = post.post_like_count - 1 where post_uuid = #{postId};
     
-    DELETE FROM post_like WHERE post_uuid= #{postId} AND user_idx = #{userUUID}
+    DELETE FROM post_like WHERE post_uuid= #{postId} AND user_idx = #{userIdx}
 
   </delete>
 </mapper>

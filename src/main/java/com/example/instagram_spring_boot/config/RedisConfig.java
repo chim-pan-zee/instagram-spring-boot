@@ -23,11 +23,11 @@ public class RedisConfig {
     }
 
     @Bean
-    public RedisTemplate<String, Byte> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
-        RedisTemplate<String, Byte> redisTemplate = new RedisTemplate<>();
+    public RedisTemplate<String, String> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
+        RedisTemplate<String, String> redisTemplate = new RedisTemplate<>();
         redisTemplate.setConnectionFactory(redisConnectionFactory);
         redisTemplate.setKeySerializer(new StringRedisSerializer());
-        redisTemplate.setValueSerializer(new org.springframework.data.redis.serializer.GenericToStringSerializer<>(Byte.class));
+        redisTemplate.setValueSerializer(new org.springframework.data.redis.serializer.GenericToStringSerializer<>(String.class));
 
         return redisTemplate;
     }

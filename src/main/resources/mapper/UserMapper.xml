@@ -19,7 +19,7 @@
   </select>
 <!-- 조회 -->
   <select id="getUserInfo" parameterType="String" resultType="hashmap" >
-  SELECT ut.user_idx, ut.username, ut.name,count(pt.user_idx)as total  
+  SELECT ut.user_idx, ut.username, ut.name,count(pt.user_idx)as total, ut.description, ut.gender 
   FROM person ut, post pt 
   WHERE ut.username = #{username} and ut.user_idx = pt.user_idx
   </select>
@@ -27,4 +27,15 @@
   <select id="getUserCheck" parameterType="String" resultType="int">
   select count(*) as total from person where username = #{userId}
   </select>
+  <select id="getUserIdx" parameterType="String" resultType="String">
+    SELECT user_idx FROM person WHERE username = #{username}
+  </select>
+
+
+  <!-- 업데이트 -->
+  <update id="updateUserProfile" parameterType="hashmap">
+    update person 
+    set description = #{userDesc}, gender=#{userGender} 
+    where username = #{username}
+  </update>
 </mapper>

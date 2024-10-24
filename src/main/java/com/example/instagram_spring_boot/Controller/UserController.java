@@ -7,6 +7,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,6 +25,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.example.instagram_spring_boot.Mapper.FilesMapper;
 
 @CrossOrigin(origins = "http://localhost:8081")
 @RestController
@@ -69,10 +71,24 @@ public class UserController {
     private UserMapper userMapper;
 
     @Autowired
+    private FilesMapper filesMapper;
+
+    @Autowired
     private ShaUtil shaUtil;
 
     @Autowired
     private JwtUtil jwtUtil;
+
+    @Autowired
+    private RedisTemplate<String, String> redisTemplate;
+
+    public void saveData(String key, String data) {
+        redisTemplate.opsForValue().set(key, data);
+    }
+
+    public String getData(String key) {
+        return redisTemplate.opsForValue().get(key);
+    }
 
     // @Autowired
     // private JwtAuthenticationFilter jwtAuthenticationFilter;
@@ -177,6 +193,9 @@ public class UserController {
                             System.out.println("비번검증완료" + newUser);
 
                             userMapper.insertUser(newUser);
+                            saveData("user-idx-" + userId, userMapper.getUserIdx(userId));
+
+                            filesMapper.insertUserFile(getData("user-idx-" + userId));
                             System.out.println("실행완료");
                             return true;
 
@@ -222,6 +241,7 @@ public class UserController {
 
                     if (hashPassword.equals(user.get("password"))) {
                         String username = (String) user.get("username");
+                        String name = (String) user.get("name");
                         System.out.println("실행이쿠죠");
 
                         String token = jwtUtil.createToken(username);
@@ -230,8 +250,10 @@ public class UserController {
 
                         HashMap<String, Object> result = new HashMap<>();
                         result.put("username", username);
+                        result.put("name", name);
                         result.put("user_token", token);
                         System.out.println("현재토큰: " + token);
+
                         return ResponseEntity.ok(result);
                     } else {
                         return ResponseEntity.status(401).body(null);

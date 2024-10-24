@@ -168,6 +168,7 @@
     <artifactId>spring-boot-starter-data-redis</artifactId>
     <version>3.3.4</version>
 </dependency>
+<!-- 주디스 설정, setbit 사용 -->
 
 
 

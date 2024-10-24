@@ -10,12 +10,12 @@ public interface LikeMapper {
     //z 조회
     int getLikeTotal(String postId);
 
-    int getLikeCheck(String postId, String userUUID);
+    int getLikeCheck(String postId, String userIdx);
 
     //좋아요 삽입
     void insertLike(HashMap<String, String> result);
 
     //좋아요 삭제
-    void deleteLike(String postId, String userUUID);
+    void deleteLike(String postId, String userIdx);
 
 }

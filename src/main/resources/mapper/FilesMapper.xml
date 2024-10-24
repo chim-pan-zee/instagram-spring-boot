@@ -5,14 +5,25 @@
 
   <select id="getFiles" parameterType="String" resultType="hashmap">
     select file_name from post_file 
-    where post_uuid = #{connectedUUID}
+    where post_uuid = #{postId}
+  </select>
+
+    <select id="getUserFile" parameterType="String" resultType="String">
+    SELECT file_name FROM person_file WHERE user_idx = #{userIdx}
   </select>
 
   <delete id="deleteFiles" parameterType="String">
     delete from post_file where post_uuid = #{postId}
   </delete>
 
-  <update >
-  
+  <insert id="insertUserFile" parameterType="String">
+    insert into person_file values(#{userIdx}, null, null, null)
+  </insert>
+
+  <update id="updateUserFile" parameterType="hashmap">
+  update person_file 
+  set file_name = #{fileName}, file_dir = #{fileDir}
+  where user_idx = #{userIdx}
   </update>
+
 </mapper>

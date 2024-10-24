@@ -29,14 +29,14 @@ public class LikeController {
     private JwtUtil jwtUtil;
 
     @Autowired
-    private RedisTemplate<String, Byte> redisLike;
+    private RedisTemplate<String, String> redisTemplate;
 
-    public void saveData(String key, Byte data) {
-        redisLike.opsForValue().set(key, data);
+    public void saveData(String key, String data) {
+        redisTemplate.opsForValue().set(key, data);
     }
 
-    public Byte getData(String key) {
-        return redisLike.opsForValue().get(key);
+    public String getData(String key) {
+        return redisTemplate.opsForValue().get(key);
     }
 
     @PostMapping("/likes")
@@ -51,22 +51,24 @@ public class LikeController {
             } else {
                 DecodedJWT decodedJWT = jwtUtil.decodeToken(token);
                 if (decodedJWT != null) {
-                    String userUUID = decodedJWT.getClaim("userUUID").asString();
+                    String username = decodedJWT.getClaim("username").asString();
 
-                    int likeCheck = likeMapper.getLikeCheck(postId, userUUID);
+                    String userIdx = getData("user-idx-" + username);
+
+                    int likeCheck = likeMapper.getLikeCheck(postId, userIdx);
 
                     if (likeCheck > 0) {
-                        deleteLike("post-like-" + postId, userUUID);
+                        // deleteLike("post-like-" + postId, userIdx);
+                        deleteLike(postId, userIdx);
                         return 2;
                     } else {
 
                         //redis
-                        Byte likeVal = 1;
-                        saveData(postId, likeVal);
-
+                        // Byte likeVal = 1;
+                        // saveData(postId, likeVal);
                         HashMap<String, String> result = new HashMap<>();
                         result.put("postId", postId);
-                        result.put("userUUID", userUUID);
+                        result.put("userIdx", userIdx);
 
                         likeMapper.insertLike(result);
 
@@ -104,8 +106,10 @@ public class LikeController {
 
                 DecodedJWT decodedJWT = jwtUtil.decodeToken(token);
                 if (decodedJWT != null) {
-                    String userUUID = decodedJWT.getClaim("userUUID").asString();
-                    int likeCheck = likeMapper.getLikeCheck(postId, userUUID);
+                    String username = decodedJWT.getClaim("username").asString();
+                    String userIdx = getData("user-idx-" + username);
+                    int likeCheck = likeMapper.getLikeCheck(postId, userIdx);
+                    System.out.println("카운트시작" + username + userIdx + postId);
                     if (likeCheck == 0) {
                         return false;
                     } else {
@@ -121,10 +125,11 @@ public class LikeController {
 
     @DeleteMapping("/likes")
 
-    public boolean deleteLike(String postId, String userUUID) {
+    public boolean deleteLike(String postId, String userIdx) {
         {
             try {
-                likeMapper.deleteLike(postId, userUUID);
+
+                likeMapper.deleteLike(postId, userIdx);
                 return true;
             } catch (Exception e) {
                 System.out.println("좋아요 제거 중 에러 발생");

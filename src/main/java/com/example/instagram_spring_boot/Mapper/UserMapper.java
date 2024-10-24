@@ -20,4 +20,9 @@ public interface UserMapper {
     //유저 체크
     int getUserCheck(String userId, String userUUID);
 
+    String getUserIdx(String username);
+
+    //유저업데이트
+    void updateUserProfile(HashMap<String, String> setProfile);
+
 }
