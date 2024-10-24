@@ -3,6 +3,7 @@ package com.example.instagram_spring_boot.Controller;
 import java.util.HashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisCallback;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -29,16 +30,33 @@ public class LikeController {
     private JwtUtil jwtUtil;
 
     @Autowired
-    private RedisTemplate<String, String> redisTemplate;
+    private RedisTemplate<String, String> redisString;
 
-    public void saveData(String key, String data) {
-        redisTemplate.opsForValue().set(key, data);
+    public void saveStringDataInRedis(String key, String data) {
+        redisString.opsForValue().set(key, data);
     }
 
     public String getData(String key) {
-        return redisTemplate.opsForValue().get(key);
+        return redisString.opsForValue().get(key);
     }
 
+    @Autowired
+    private RedisTemplate<String, String> redisByte;
+
+    public void saveByteDataInRedis(String key, Long idx, boolean data) {
+        redisByte.opsForValue().setBit(key, idx, data);
+    }
+
+    @Autowired
+    private RedisTemplate<String, Long> redisLong;
+
+    public Long getLongDataInRedis(String key) {
+        return redisLong.execute((RedisCallback<Long>) connection -> connection.stringCommands().bitCount(key.getBytes()));
+    }
+
+    // public Long bitcount(final String key) {
+    //     return redisByteTemplate.execute(redisConnection -> redisConnection.bitCount(key.getBytes(), start, end));
+    // }
     @PostMapping("/likes")
     public int increaseLike(@RequestBody HashMap<String, String> newLike) {
         try {
@@ -56,21 +74,28 @@ public class LikeController {
                     String userIdx = getData("user-idx-" + username);
 
                     int likeCheck = likeMapper.getLikeCheck(postId, userIdx);
+                    System.out.println("5");
 
                     if (likeCheck > 0) {
+                        System.out.println("4");
+
                         // deleteLike("post-like-" + postId, userIdx);
+                        saveByteDataInRedis("post-like-" + postId, Long.parseLong(userIdx), false);
                         deleteLike(postId, userIdx);
                         return 2;
                     } else {
-
+                        System.out.println("3");
+                        saveByteDataInRedis("post-like-" + postId, Long.parseLong(userIdx), true);
+                        System.out.println();
                         //redis
                         // Byte likeVal = 1;
                         // saveData(postId, likeVal);
                         HashMap<String, String> result = new HashMap<>();
                         result.put("postId", postId);
                         result.put("userIdx", userIdx);
-
+                        System.out.println("1");
                         likeMapper.insertLike(result);
+                        System.out.println("2");
 
                         return 1;
                     }
@@ -86,13 +111,14 @@ public class LikeController {
     }
 
     @GetMapping("/likes/{postId}")
-    public int getLikeCount(@PathVariable String postId) {
+    public Long getLikeCount(@PathVariable String postId) {
         try {
-            int result = likeMapper.getLikeTotal(postId);
+            // System.out.println(getLongDataInRedis("post-like-" + postId) + " 카운팅중");
+            Long result = getLongDataInRedis("post-like-" + postId);
             return result;
 
         } catch (Exception e) {
-            return 0;
+            return 0L;
         }
 
     }

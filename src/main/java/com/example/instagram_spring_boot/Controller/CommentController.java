@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,6 +26,16 @@ public class CommentController {
     @Autowired
     private JwtUtil jwtUtil;
 
+    @Autowired
+    private RedisTemplate<String, String> redisString;
+
+    // public void saveStringDataInRedis(String key, String data) {
+    //     redisString.opsForValue().set(key, data);
+    // }
+    public String getStringDataByRedis(String key) {
+        return redisString.opsForValue().get(key);
+    }
+
     @PostMapping("/comm")
     public Boolean uploadComment(@RequestBody HashMap<String, String> newComment) {
         try {
@@ -39,15 +50,14 @@ public class CommentController {
 
             DecodedJWT decodedJWT = jwtUtil.decodeToken(token);
             if (decodedJWT != null) {
-                String userUUID = decodedJWT.getClaim("userUUID").asString();
+                String username = decodedJWT.getClaim("username").asString();
 
                 HashMap<String, String> result = new HashMap<>();
                 result.put("postId", postId);
-                result.put("userUUID", userUUID);
+                result.put("userIdx", getStringDataByRedis("user-idx-" + username));
                 result.put("contents", contents);
 
                 commentMapper.insertComment(result);
-
                 return true;
             } else {
                 System.out.println("이 토큰은 거짓말을 하는 토큰이군");

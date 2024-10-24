@@ -5,9 +5,9 @@
 
   <insert id="insertLike" parameterType="hashmap">
     INSERT INTO post_like
-    VALUES (#{postId}, #{userIdx});
+    VALUES (#{postId}, #{userIdx}, DEFAULT);
 
-    update post set post_like_count = post.post_like_count + 1 where post_uuid = #{postId};
+    <!-- update post set post_like_count = post.post_like_count + 1 where post_uuid = #{postId}; -->
   </insert>
 
 
@@ -26,7 +26,7 @@
   </select>
 
   <delete id="deleteLike" parameterType="String">
-    update post set post_like_count = post.post_like_count - 1 where post_uuid = #{postId};
+    <!-- update post set post_like_count = post.post_like_count - 1 where post_uuid = #{postId}; -->
     
     DELETE FROM post_like WHERE post_uuid= #{postId} AND user_idx = #{userIdx}
 

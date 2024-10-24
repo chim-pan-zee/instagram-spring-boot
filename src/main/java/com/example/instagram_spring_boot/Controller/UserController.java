@@ -80,14 +80,14 @@ public class UserController {
     private JwtUtil jwtUtil;
 
     @Autowired
-    private RedisTemplate<String, String> redisTemplate;
+    private RedisTemplate<String, String> redisString;
 
     public void saveData(String key, String data) {
-        redisTemplate.opsForValue().set(key, data);
+        redisString.opsForValue().set(key, data);
     }
 
     public String getData(String key) {
-        return redisTemplate.opsForValue().get(key);
+        return redisString.opsForValue().get(key);
     }
 
     // @Autowired
