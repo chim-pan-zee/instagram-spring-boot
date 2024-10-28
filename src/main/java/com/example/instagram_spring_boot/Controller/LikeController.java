@@ -55,12 +55,9 @@ public class LikeController {
     @Autowired
     private RedisTemplate<String, Long> redisLong;
 
-    public Long getLongDataInRedis(String key, Long start, Long end) {
-        if (start == 0 && end == 0) {
-            return redisLong.execute((RedisCallback<Long>) connection -> connection.stringCommands().bitCount(key.getBytes()));
-        } else {
-            return redisLong.execute((RedisCallback<Long>) connection -> connection.stringCommands().bitCount(key.getBytes(), start, end));
-        }
+    public Long getLongDataInRedis(String key) {
+        return redisLong.execute((RedisCallback<Long>) connection -> connection.stringCommands().bitCount(key.getBytes()));
+
     }
 
     //jwt uuid 저장
@@ -88,13 +85,13 @@ public class LikeController {
 
                     String userIdx = getData("user-idx-" + username);
 
-                    int likeCheck = likeMapper.getLikeCheck(postId, userIdx); //rㄷdis로 수정
-                    Boolean likeCheck2 = getByteData(postId, Long.parseLong(userIdx));
-                    System.out.println("좋아요레디스 결과: " + likeCheck2);
+                    // int likeCheck = likeMapper.getLikeCheck(postId, userIdx); //rㄷdis로 수정
+                    Boolean likeCheck = getByteData("post_like_" + postId, Long.parseLong(userIdx));
+                    // System.out.println("좋아요레디스 결과- " + Long.parseLong(userIdx) + postId + likeCheck2);
                     System.out.println("5");
 
-                    if (likeCheck > 0) {
-                        System.out.println("4");
+                    if (likeCheck == true) {
+                        System.out.println("좋아요 삭제");
 
                         // deleteLike("post-like-" + postId, userIdx);
                         saveByteDataInRedis("post_like_" + postId, Long.parseLong(userIdx), false);
@@ -112,7 +109,7 @@ public class LikeController {
                         result.put("userIdx", userIdx);
                         System.out.println("1");
                         likeMapper.insertLike(result);
-                        System.out.println("2");
+                        System.out.println("좋아요 누름");
 
                         return 1;
                     }

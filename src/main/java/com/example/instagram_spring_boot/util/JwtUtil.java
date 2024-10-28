@@ -1,6 +1,7 @@
 package com.example.instagram_spring_boot.util;
 
 import java.util.Calendar;
+import java.util.Date;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -35,16 +36,25 @@ public class JwtUtil {
 
         Calendar date = Calendar.getInstance();
         long timeInSecs = date.getTimeInMillis();
-        // Date afterAdding30Mins = new Date(timeInSecs + (3000 * 60 * 1000));
+        Date now = new Date();
 
-        return JWT.create()
-                .withIssuer("vue-board")
+        String accessToken = JWT.create()
                 .withClaim("useridx", idx)
                 .withClaim("username", username)
                 .withClaim("name", name)
-                .withIssuedAt(date.getTime())
-                // .withExpiresAt(afterAdding30Mins)
+                .withIssuedAt(now)
+                .withExpiresAt(new Date(System.currentTimeMillis() + 1 * (1000 * 60 * 30)))
                 .sign(algorithm);
+
+        String refreshToken = JWT.create()
+                .withClaim("useridx", idx)
+                .withClaim("username", username)
+                .withClaim("name", name)
+                .withIssuedAt(now)
+                .withExpiresAt(new Date(System.currentTimeMillis() + 1 * (1000 * 60 * 60 * 24 * 7)))
+                .sign(algorithm);
+
+        return accessToken;
     }
 
     public DecodedJWT decodeToken(String token) {
