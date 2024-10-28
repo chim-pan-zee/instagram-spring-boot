@@ -47,6 +47,11 @@ public class LikeController {
         redisByte.opsForValue().setBit(key, idx, data);
     }
 
+    public Boolean getByteData(String key, Long idx) {
+        System.out.println(redisString.opsForValue().getBit(key, idx));
+        return redisString.opsForValue().getBit(key, idx);
+    }
+
     @Autowired
     private RedisTemplate<String, Long> redisLong;
 
@@ -84,7 +89,8 @@ public class LikeController {
                     String userIdx = getData("user-idx-" + username);
 
                     int likeCheck = likeMapper.getLikeCheck(postId, userIdx); //rㄷdis로 수정
-                    int likeCheck2 = getLongDataInRedis
+                    Boolean likeCheck2 = getByteData(postId, Long.parseLong(userIdx));
+                    System.out.println("좋아요레디스 결과: " + likeCheck2);
                     System.out.println("5");
 
                     if (likeCheck > 0) {
