@@ -40,15 +40,15 @@ public class CommentController {
     public Boolean uploadComment(@RequestBody HashMap<String, String> newComment) {
         try {
             System.out.println("신호 왔음" + newComment);
-            String token = newComment.get("authorToken");
+            String uuid = newComment.get("authorUUID");
             String postId = newComment.get("postId");
             String contents = newComment.get("contents");
-            if (token == null || token.isEmpty()) {
+            if (uuid == null || uuid.isEmpty()) {
                 System.out.println("토큰이 없습니다...");
                 return false;
             }
 
-            DecodedJWT decodedJWT = jwtUtil.decodeToken(token);
+            DecodedJWT decodedJWT = jwtUtil.decodeToken(getStringDataByRedis("user_" + uuid));
             if (decodedJWT != null) {
                 String username = decodedJWT.getClaim("username").asString();
 
@@ -62,7 +62,7 @@ public class CommentController {
                 commentMapper.insertComment(result);
                 return true;
             } else {
-                System.out.println("이 토큰은 거짓말을 하는 토큰이군");
+                System.out.println("이 토큰은 거짓말을 하는 토큰이군1");
                 return false;
             }
 

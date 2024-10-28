@@ -12,6 +12,7 @@ import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -44,6 +45,17 @@ public class PostController {
     @Value("${file.path}")
     private String uploadFolder;
 
+    @Autowired
+    private RedisTemplate<String, String> redisString;
+
+    public void saveData(String key, String data) {
+        redisString.opsForValue().set(key, data);
+    }
+
+    public String getData(String key) {
+        return redisString.opsForValue().get(key);
+    }
+
     @PostMapping("/p/{id}")
     private void uploadPost(
             @RequestPart(value = "key", required = false) Map<String, String> key,
@@ -52,10 +64,10 @@ public class PostController {
         try {
             System.out.println("키값: " + key);
 
-            String token = key.get("authorToken");
+            String uuid = key.get("authorUUID");
             String contents = key.get("contents");
 
-            DecodedJWT decodedJWT = jwtUtil.decodeToken(token);
+            DecodedJWT decodedJWT = jwtUtil.decodeToken(getData("user_" + uuid));
             if (decodedJWT != null) {
                 String username = decodedJWT.getClaim("username").asString();
                 String postUUID = UUID.randomUUID().toString();
@@ -85,7 +97,7 @@ public class PostController {
                 }
 
             } else {
-                System.out.println("이 토큰은 거짓말을 하는 토큰이군");
+                System.out.println("이 토큰은 거짓말을 하는 토큰이군4");
             }
         } catch (Exception e) {
             System.out.println("에러 발생했습니다.");
@@ -104,12 +116,12 @@ public class PostController {
     public List<HashMap> getPostInfo(@RequestPart(value = "key", required = false) Map<String, String> key) {
         try {
             String username = key.get("username");
-            String token = key.get("userToken");
+            String uuid = key.get("authorUUID");
             // System.out.println("토큰은:" + token);
-            DecodedJWT decodedJWT = jwtUtil.decodeToken(token);
+            DecodedJWT decodedJWT = jwtUtil.decodeToken(getData("user_" + uuid));
 
             if (decodedJWT != null) {
-                String userUUID = decodedJWT.getClaim("userUUID").asString();
+                // String userToken = decodedJWT.getClaim("authorUUID").asString();
                 List<HashMap> thumbnails = postMapper.getPostsThumbnail(username);
 
                 List<HashMap> imagesWithPath = new ArrayList<>();
@@ -132,7 +144,7 @@ public class PostController {
                 return imagesWithPath;
 
             } else {
-                System.out.println("이 토큰은 거짓말을 하는 토큰이군");
+                System.out.println("이 토큰은 거짓말을 하는 토큰이군5");
                 return null;
             }
 

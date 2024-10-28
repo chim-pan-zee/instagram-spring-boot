@@ -1,7 +1,6 @@
 package com.example.instagram_spring_boot.Controller;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -12,20 +11,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
-
-import com.example.instagram_spring_boot.Mapper.UserMapper;
-import com.example.instagram_spring_boot.util.ShaUtil;
-import com.example.instagram_spring_boot.util.JwtUtil;
-// import com.example.instagram_spring_boot.util.JwtAuthenticationFilter;
-
-import jakarta.servlet.http.HttpServletResponse;
-
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.example.instagram_spring_boot.Mapper.FilesMapper;
+import com.example.instagram_spring_boot.Mapper.UserMapper;
+import com.example.instagram_spring_boot.util.JwtUtil;
+import com.example.instagram_spring_boot.util.ShaUtil;
+import io.lettuce.core.api.sync.RedisCommands;
+
+import jakarta.servlet.http.HttpServletResponse;
 
 @CrossOrigin(origins = "http://localhost:8081")
 @RestController
@@ -88,6 +85,11 @@ public class UserController {
 
     public String getData(String key) {
         return redisString.opsForValue().get(key);
+    }
+
+    public void deleteData(String key) {
+        redisString.delete(key);
+        // return redisString.opsForValue().get(key);
     }
 
     // @Autowired
@@ -240,11 +242,19 @@ public class UserController {
                     System.out.println("암호화");
 
                     if (hashPassword.equals(user.get("password"))) {
-                        String username = (String) user.get("username");
-                        String name = (String) user.get("name");
                         System.out.println("실행이쿠죠");
 
-                        String token = jwtUtil.createToken(username);
+                        String username = (String) user.get("username");
+                        System.out.println("실행이쿠죠");
+
+                        String name = (String) user.get("name");
+                        System.out.println("실행이쿠죠");
+                        System.out.println(user.get("user_idx").getClass().getName());
+
+                        String idx = (String) user.get("user_idx").toString();
+                        System.out.println("실행이쿠죠");
+
+                        String token = jwtUtil.createToken(idx, username, name);
                         System.out.println(token);
                         response.setHeader("Authorization", token);
 
@@ -252,6 +262,8 @@ public class UserController {
                         result.put("username", username);
                         result.put("name", name);
                         result.put("user_token", token);
+                        result.put("user_uuid", redisJwtTokenSaver(token));
+                        // redisJwtTokenSaver(token);
                         System.out.println("현재토큰: " + token);
 
                         return ResponseEntity.ok(result);
@@ -267,6 +279,20 @@ public class UserController {
         } catch (Exception e) {
             System.out.println("로그인 실패애애앳!! " + signInData);
             return ResponseEntity.status(500).body(null);
+        }
+    }
+
+    @PostMapping("/signout")
+    public void postMethodName(@RequestBody String uuid) {
+        try {
+            if (uuid != null) {
+                deleteData("user_" + uuid);
+                System.out.println("토큰 uuid 삭제완료: " + "user_" + uuid);
+            } else {
+                System.out.println("로그아웃실패");
+            } // DecodedJWT decodedJWT = jwtUtil.decodeToken(token);
+        } catch (Exception e) {
+            System.out.println("로그아웃실패2");
         }
     }
 
@@ -294,6 +320,19 @@ public class UserController {
             System.out.println("에러 발생했습니다.");
             e.printStackTrace();
             return false;
+        }
+    }
+
+    public String redisJwtTokenSaver(String token) {
+        try {
+            String userUUID = UUID.randomUUID().toString();
+            //key=useruuid, value=jwt token
+            saveData("user_" + userUUID, token);
+            System.out.println("토큰 uuid 저장 완료" + "user_" + userUUID);
+            return userUUID;
+        } catch (Exception e) {
+            System.out.println("실패애애앳!(토큰uuid저장하는게)");
+            return null;
         }
     }
 

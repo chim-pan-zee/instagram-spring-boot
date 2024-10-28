@@ -50,10 +50,20 @@ public class LikeController {
     @Autowired
     private RedisTemplate<String, Long> redisLong;
 
-    public Long getLongDataInRedis(String key) {
-        return redisLong.execute((RedisCallback<Long>) connection -> connection.stringCommands().bitCount(key.getBytes()));
+    public Long getLongDataInRedis(String key, Long start, Long end) {
+        if (start == 0 && end == 0) {
+            return redisLong.execute((RedisCallback<Long>) connection -> connection.stringCommands().bitCount(key.getBytes()));
+        } else {
+            return redisLong.execute((RedisCallback<Long>) connection -> connection.stringCommands().bitCount(key.getBytes(), start, end));
+        }
     }
 
+    //jwt uuid 저장
+    //jwt를 세션에 저장하고 로컬스토리지에 키를 서버로 보내서 jwt를 조회(토큰그자체)
+    //키는 uuid(브라우저에 전송하는 uuid(다른 곳에서 중복사용되면 안됨(구분이 되어야 함))
+    //username으로 검색하는 방식 제거
+    //redis expired 토큰처럼 제거
+    //토큰을 두 개 두고, 리프레시
     // public Long bitcount(final String key) {
     //     return redisByteTemplate.execute(redisConnection -> redisConnection.bitCount(key.getBytes(), start, end));
     // }
@@ -61,31 +71,32 @@ public class LikeController {
     public int increaseLike(@RequestBody HashMap<String, String> newLike) {
         try {
             System.out.println("신호 왔음" + newLike);
-            String token = newLike.get("authorToken");
+            String uuid = newLike.get("authorUUID");
             String postId = newLike.get("postId");
-            if (token == null) {
+            if (uuid == null) {
                 System.out.println("토큰이 없습니다...");
                 return 0;
             } else {
-                DecodedJWT decodedJWT = jwtUtil.decodeToken(token);
+                DecodedJWT decodedJWT = jwtUtil.decodeToken(getData("user_" + uuid));
                 if (decodedJWT != null) {
                     String username = decodedJWT.getClaim("username").asString();
 
                     String userIdx = getData("user-idx-" + username);
 
-                    int likeCheck = likeMapper.getLikeCheck(postId, userIdx);
+                    int likeCheck = likeMapper.getLikeCheck(postId, userIdx); //rㄷdis로 수정
+                    int likeCheck2 = getLongDataInRedis
                     System.out.println("5");
 
                     if (likeCheck > 0) {
                         System.out.println("4");
 
                         // deleteLike("post-like-" + postId, userIdx);
-                        saveByteDataInRedis("post-like-" + postId, Long.parseLong(userIdx), false);
+                        saveByteDataInRedis("post_like_" + postId, Long.parseLong(userIdx), false);
                         deleteLike(postId, userIdx);
                         return 2;
                     } else {
                         System.out.println("3");
-                        saveByteDataInRedis("post-like-" + postId, Long.parseLong(userIdx), true);
+                        saveByteDataInRedis("post_like_" + postId, Long.parseLong(userIdx), true);
                         System.out.println();
                         //redis
                         // Byte likeVal = 1;
@@ -100,7 +111,7 @@ public class LikeController {
                         return 1;
                     }
                 } else {
-                    System.out.println("이 토큰은 거짓말을 하는 토큰이군");
+                    System.out.println("이 토큰은 거짓말을 하는 토큰이군3");
                     return 0;
                 }
             }
@@ -114,7 +125,7 @@ public class LikeController {
     public Long getLikeCount(@PathVariable String postId) {
         try {
             // System.out.println(getLongDataInRedis("post-like-" + postId) + " 카운팅중");
-            Long result = getLongDataInRedis("post-like-" + postId);
+            Long result = getLongDataInRedis("post_like_" + postId);
             return result;
 
         } catch (Exception e) {
@@ -126,11 +137,11 @@ public class LikeController {
     @PostMapping("/likes/check")
     public boolean getLikeCheck(@RequestBody HashMap<String, String> newLike) {
         try {
-            String token = newLike.get("authorToken");
+            String uuid = newLike.get("authorUUID");
             String postId = newLike.get("postId");
-            if (token != null) {
+            if (uuid != null) {
 
-                DecodedJWT decodedJWT = jwtUtil.decodeToken(token);
+                DecodedJWT decodedJWT = jwtUtil.decodeToken(getData("user_" + uuid));
                 if (decodedJWT != null) {
                     String username = decodedJWT.getClaim("username").asString();
                     String userIdx = getData("user-idx-" + username);

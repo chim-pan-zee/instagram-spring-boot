@@ -77,9 +77,9 @@ public class FilesController {
         try {
             System.out.println("키값: " + key);
 
-            String token = (String) key.get("authorToken");
+            String uuid = (String) key.get("authorUUID");
 
-            DecodedJWT decodedJWT = jwtUtil.decodeToken(token);
+            DecodedJWT decodedJWT = jwtUtil.decodeToken(getData("user_" + uuid));
             if (decodedJWT != null) {
                 String username = decodedJWT.getClaim("username").asString();
                 String userDesc = (String) key.get("userDesc");
@@ -111,7 +111,7 @@ public class FilesController {
                 System.out.println("반복!반복!반복작업!");
 
             } else {
-                System.out.println("이 토큰은 거짓말을 하는 토큰이군");
+                System.out.println("이 토큰은 거짓말을 하는 토큰이군2");
             }
         } catch (Exception e) {
             System.out.println("에러 발생했습니다.");
