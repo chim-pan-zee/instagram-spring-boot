@@ -75,7 +75,7 @@ public class FilesController {
             @RequestPart(value = "file", required = false) MultipartFile file
     ) {
         try {
-            System.out.println("키값: " + key);
+            System.out.println("키값3: " + key);
 
             String uuid = (String) key.get("authorUUID");
 

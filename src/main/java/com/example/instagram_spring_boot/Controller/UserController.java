@@ -20,7 +20,6 @@ import com.example.instagram_spring_boot.Mapper.FilesMapper;
 import com.example.instagram_spring_boot.Mapper.UserMapper;
 import com.example.instagram_spring_boot.util.JwtUtil;
 import com.example.instagram_spring_boot.util.ShaUtil;
-import io.lettuce.core.api.sync.RedisCommands;
 
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -254,17 +253,25 @@ public class UserController {
                         String idx = (String) user.get("user_idx").toString();
                         System.out.println("실행이쿠죠");
 
-                        String token = jwtUtil.createToken(idx, username, name);
-                        System.out.println(token);
-                        response.setHeader("Authorization", token);
+                        String accessToken = jwtUtil.createToken(idx, username, name, true);
+                        String refreshToken = jwtUtil.createToken(idx, username, name, false);
+                        System.out.println(accessToken);
+                        System.out.println(refreshToken);
+                        response.setHeader("Authorization", accessToken);
 
                         HashMap<String, Object> result = new HashMap<>();
                         result.put("username", username);
                         result.put("name", name);
-                        result.put("user_token", token);
-                        result.put("user_uuid", redisJwtTokenSaver(token));
+                        result.put("user_token", accessToken);
+                        // result.put("user_refresh_token", refreshToken);
+                        //우선 uuid에 액세스 토큰을 담아 사용한다.
+                        // System.out.println("액세스토큰 " + redisJwtTokenSaver(accessToken, true));
+                        result.put("user_uuid", redisJwtTokenSaver(accessToken, true));
+                        //그리고 리프레시 토큰도 따로 담는다.
                         // redisJwtTokenSaver(token);
-                        System.out.println("현재토큰: " + token);
+                        // System.out.println("리프레시토큰 " + redisJwtTokenSaver(refreshToken, false));
+                        result.put("user_refresh_uuid", redisJwtTokenSaver(refreshToken, false));
+                        System.out.println("현재토큰: " + accessToken);
 
                         return ResponseEntity.ok(result);
                     } else {
@@ -323,15 +330,52 @@ public class UserController {
         }
     }
 
-    public String redisJwtTokenSaver(String token) {
+    //토큰을 user_uuid로 저장(redis에 키와 값 형태로 저장됨)
+    public String redisJwtTokenSaver(String token, Boolean type) {
         try {
             String userUUID = UUID.randomUUID().toString();
             //key=useruuid, value=jwt token
-            saveData("user_" + userUUID, token);
+            if (type == true) {
+                saveData("user_" + userUUID, token);
+            } else {
+                saveData("user_refresh_" + userUUID, token);
+            }
             System.out.println("토큰 uuid 저장 완료" + "user_" + userUUID);
             return userUUID;
         } catch (Exception e) {
             System.out.println("실패애애앳!(토큰uuid저장하는게)");
+            return null;
+        }
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<HashMap<String, Object>>
+            refreshTokenResponse(@RequestBody HashMap<String, String> UUIDs, HttpServletResponse response) {
+        try {
+            if (UUIDs != null || UUIDs.isEmpty()) {
+                DecodedJWT decodedJWT = jwtUtil.decodeToken(getData("user_refresh_" + UUIDs.get("refreshUUID")));
+                if (decodedJWT != null) {
+                    String idx = decodedJWT.getClaim("useridx").asString();
+                    String username = decodedJWT.getClaim("username").asString();
+                    String name = decodedJWT.getClaim("name").asString();
+
+                    String newAccessToken = jwtUtil.createToken(idx, username, name, true);
+                    String newRefreshToken = jwtUtil.createToken(idx, username, name, false);
+
+                    response.setHeader("Authorization", newAccessToken);
+                    HashMap<String, Object> result = new HashMap<>();
+                    result.put("user_uuid", redisJwtTokenSaver(newAccessToken, true));
+                    result.put("user_refresh_uuid", redisJwtTokenSaver(newRefreshToken, false));
+                    return ResponseEntity.ok(result);
+                } else {
+                    return null;
+                }
+            } else {
+                return null;
+            }
+        } catch (Exception e) {
+            System.out.println("토큰 재생성 중 오류.");
+            e.printStackTrace();
             return null;
         }
     }

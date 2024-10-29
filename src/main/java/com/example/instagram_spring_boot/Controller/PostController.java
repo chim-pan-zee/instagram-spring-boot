@@ -62,7 +62,7 @@ public class PostController {
             @RequestPart(value = "files") List<MultipartFile> files
     ) {
         try {
-            System.out.println("키값: " + key);
+            System.out.println("키값2: " + key);
 
             String uuid = key.get("authorUUID");
             String contents = key.get("contents");
@@ -198,13 +198,13 @@ public class PostController {
                 System.out.println("key가 null입니다.");
                 return false;
             }
-            String token = (String) key.get("authorToken");
+            String uuid = (String) key.get("authorUUID");
 
-            System.out.println("키값: " + key);
+            System.out.println("키값1: " + key);
 
-            DecodedJWT decodedJWT = jwtUtil.decodeToken(token);
+            DecodedJWT decodedJWT = jwtUtil.decodeToken(getData("user_" + uuid));
             if (decodedJWT != null) {
-                String userUUID = decodedJWT.getClaim("userUUID").asString();
+                String userIdx = decodedJWT.getClaim("useridx").asString();
 
                 String postUUID = (String) key.get("postId");
                 String contents = (String) key.get("contents");
@@ -212,8 +212,8 @@ public class PostController {
                 //[{file_name=}]...이런식으로 옴
                 filesMapper.deleteFiles(postUUID);
                 System.out.println("게시물아이디" + postUUID);
-                postMapper.updatePost(contents, postUUID, userUUID);
-                System.out.println("업뎃내역  " + contents + "  " + postUUID + "  " + userUUID);
+                postMapper.updatePost(contents, postUUID, userIdx);
+                System.out.println("업뎃내역  " + contents + "  " + postUUID);
 
                 for (HashMap image : images) {
                     String fileName = (String) image.get("file_name");

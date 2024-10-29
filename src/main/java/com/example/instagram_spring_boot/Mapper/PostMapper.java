@@ -24,6 +24,6 @@ public interface PostMapper {
     void deletePost(String postId);
 
     //게시물 업데이트
-    void updatePost(String contents, String postUUID, String userUUID);
+    void updatePost(String contents, String postUUID, String userIdx);
 
 }

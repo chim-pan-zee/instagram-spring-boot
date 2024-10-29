@@ -55,6 +55,6 @@
   <!-- updatePost --> 
 
   <update id="updatePost" parameterType="String">
-  update post set content = #{contents} where post_uuid = #{postUUID} and user_idx = #{userUUID}
+  update post set content = #{contents} where post_uuid = #{postUUID} and user_idx = #{userIdx}
   </update>
 </mapper>
